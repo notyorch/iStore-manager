@@ -1,7 +1,5 @@
-<h1>
-  <img src="frontend/public/logo.png" alt="Logo" width="40" style="vertical-align:middle; margin-right:10px;" />
-  iStore Manager
-</h1>
+# README - iStore Manager
+# ![Logo](screenshots/banner.png)
 
 [![Universidad UPY](https://img.shields.io/badge/Universidad-UPY-purple?logo=graduation-cap)](https://www.university.upy.edu.mx/)
 
