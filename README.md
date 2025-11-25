@@ -13,13 +13,41 @@
 
 ## Descripción General
 
-**iStore Manager** es una aplicación de escritorio para gestionar inventarios de iPhones (modelos 11 a 17 Pro Max). El sistema permite:
-- 📊 Visualizar el inventario en tiempo real
-- 🛒 Registrar ventas y eliminar productos
-- 🔍 Buscar por rango de precios
-- 📈 Generar reportes ordenados
-- ↩️ Deshacer acciones (papelera)
-- 👥 Gestionar cola de clientes
+**iStore Manager** es una aplicación de escritorio para gestionar inventarios de iPhones. El sistema permite:
+- Visualizar el inventario en tiempo real
+- Registrar ventas y eliminar productos
+- Buscar por rango de precios
+- Generar reportes ordenados
+- Deshacer acciones (papelera)
+- Gestionar cola de clientes
+
+## Funcionalidades del dashboard
+### 1. Inventario (Vista principal)
+Visualización completa de productos con filtrado y ordenamiento.
+- **Funcionalidad:** Carga, agrega y edita productos.
+- **Estructura:** `ListaDobleEnlazada` (Inserción/Eliminación O(1) en extremos).
+- **Algoritmo:** `Bubble Sort` (para ordenar por precio/modelo en la lista).
+<img src="screenshots/inventario.png" alt="Vista de inventario" >
+
+### 2. Ventas y Carrito
+Gestión de la cola de clientes y procesamiento de compras.
+- **Funcionalidad:** Agrega clientes a espera y procesa su compra en orden de llegada.
+- **Estructura:** `Cola` (FIFO - First In, First Out).
+<img src="screenshots/ventas.png" alt="Vista de ventas" >
+
+### 3. Historial y papelera
+Registro de acciones y recuperación de productos eliminados.
+- **Funcionalidad:** Permite "Deshacer" la última eliminación o venta errónea.
+- **Estructura:** `Pila` (LIFO - Last In, First Out).
+<img src="screenshots/historial.png" alt="Vista de historial" >
+
+### 4. Reportes y búsqueda
+Análisis de datos y filtrado avanzado.
+- **Funcionalidad:** Búsqueda rápida por rangos de precio y estadísticas.
+- **Estructura:** `Árbol Binario de Búsqueda (BST)` (Búsqueda eficiente O(log n)).
+- **Algoritmo:** `Quick Sort` (para generar reportes ordenados de mayor a menor precio).
+<img src="screenshots/reportes.png" alt="Vista de reportes" >
+
 
 ## Requisitos Previos
 
@@ -117,7 +145,7 @@ Entrega_2_Desarrollo/
 
 ```
 
-## Funcionalidades Principales
+## Funcionalidades Principales (Técnicas)
 
 ### 📱 Dashboard de Inventario
 - Tabla dinámica con todos los iPhones disponibles
