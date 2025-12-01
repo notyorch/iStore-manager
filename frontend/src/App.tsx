@@ -6,7 +6,7 @@ import { HistoryView } from "./components/HistoryView";
 import { ReportsView } from "./components/ReportsView";
 import { SettingsModal } from "./components/SettingsModal";
 import { AddEditModal } from "./components/AddEditModal";
-import { api, Phone } from "./services/api";
+import { api, Phone, DashboardStats } from "./services/api";
 
 interface Customer {
   id: number;
@@ -37,9 +37,11 @@ export default function App() {
 
   // Data from API
   const [phones, setPhones] = useState<Phone[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
     loadInventory();
+    loadStatistics();
   }, []);
 
   const loadInventory = async () => {
@@ -48,6 +50,15 @@ export default function App() {
       setPhones(data);
     } catch (error) {
       console.error("Error loading inventory:", error);
+    }
+  };
+
+  const loadStatistics = async () => {
+    try {
+      const data = await api.getStats();
+      setStats(data);
+    } catch (error) {
+      console.error("Error loading statistics:", error);
     }
   };
 
@@ -95,6 +106,7 @@ export default function App() {
         addLog(`Agregado: ${newPhone.modelo} (ID: ${newPhone.id})`);
       }
       loadInventory(); // Reload data
+      loadStatistics();
       setIsModalOpen(false); // Close modal if open
     } catch (error) {
       console.error("Error saving phone:", error);
@@ -106,6 +118,7 @@ export default function App() {
     try {
       await api.deletePhone(id);
       loadInventory();
+      loadStatistics();
       
       // Add to local history for UI feedback (optional, or fetch history from backend if available)
       const phone = phones.find((p) => p.id === id);
@@ -148,6 +161,7 @@ export default function App() {
     try {
       const restored = await api.undoLastSale();
       loadInventory();
+      loadStatistics();
       addLog(`Deshacer: Restaurado ${restored.modelo} (ID: ${restored.id})`);
       if (history.length > 0) {
         setHistory((prev) => prev.slice(1));
@@ -159,12 +173,10 @@ export default function App() {
   };
 
   // Calculate stats
-  const totalInventory = phones.length;
-  const totalSales = history.filter((h) => h.action.includes("Vendido")).length;
-  const revenue = phones
-    .filter((p) => p.estado === "Vendido")
-    .reduce((sum, p) => sum + p.precio, 0);
-  const availableStock = phones.filter((p) => p.estado === "Disponible").length;
+  const totalInventory = stats?.inventory?.total ?? phones.length;
+  const availableStock = stats?.inventory?.available ?? phones.length;
+  const totalSales = stats?.sales?.total ?? history.filter((h) => h.action.includes("Vendido")).length;
+  const revenue = stats?.sales?.revenue ?? 0;
 
   return (
     <div className={`flex h-screen overflow-hidden ${isDarkMode ? "bg-[#1C1C1C]" : "bg-gray-100"}`}>
@@ -202,6 +214,7 @@ export default function App() {
           revenue={revenue}
           availableStock={availableStock}
           isDarkMode={isDarkMode}
+          stats={stats}
         />
       )}
 

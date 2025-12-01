@@ -9,10 +9,55 @@ export interface Phone {
   estado: string;
 }
 
+export interface InventoryPriceSegment {
+  label: string;
+  from: number;
+  to: number | null;
+  count: number;
+}
+
+export interface InventoryTopModel {
+  modelo: string;
+  cantidad: number;
+}
+
+export interface SalesTopModel {
+  modelo: string;
+  cantidad: number;
+  ingresos: number;
+}
+
+export interface DashboardStats {
+  inventory: {
+    total: number;
+    available: number;
+    value: number;
+    average_price: number;
+    max_price: number;
+    min_price: number;
+    condition_distribution: Record<string, number>;
+    capacity_distribution: Record<string, number>;
+    price_segments: InventoryPriceSegment[];
+    top_models: InventoryTopModel[];
+  };
+  sales: {
+    total: number;
+    revenue: number;
+    average_ticket: number;
+    top_models: SalesTopModel[];
+  };
+}
+
 export const api = {
   getInventory: async (): Promise<Phone[]> => {
     const response = await fetch(`${API_URL}/inventory`);
     if (!response.ok) throw new Error('Failed to fetch inventory');
+    return response.json();
+  },
+
+  getStats: async (): Promise<DashboardStats> => {
+    const response = await fetch(`${API_URL}/stats`);
+    if (!response.ok) throw new Error('Failed to fetch stats');
     return response.json();
   },
 

@@ -35,3 +35,11 @@ class Pila:
             print(f"-> {actual.dato}")
             actual = actual.siguiente
         print("------------------------\n")
+
+    def a_lista(self):
+        elementos = []
+        actual = self.tope
+        while actual:
+            elementos.append(actual.dato)
+            actual = actual.siguiente
+        return elementos

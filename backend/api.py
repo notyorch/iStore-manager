@@ -1,6 +1,7 @@
 import os
 import csv
 import logging
+from collections import Counter, defaultdict
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -26,6 +27,105 @@ historial_eliminados = Pila()
 cola_pedidos = Cola()
 indice_precios = ArbolBinarioBusqueda()
 ARCHIVO_DATOS = os.path.join("datos", "inventario.csv")
+
+SEGMENTOS_PRECIO = [
+    (0, 10000, "0 - 10K"),
+    (10000, 20000, "10K - 20K"),
+    (20000, 30000, "20K - 30K"),
+    (30000, float("inf"), "30K+")
+]
+
+
+def _normalizar_condicion(valor):
+    if not valor:
+        return "Sin condición"
+    return valor
+
+
+def _normalizar_capacidad(valor):
+    if not valor:
+        return "Sin capacidad"
+    return valor
+
+
+def _normalizar_modelo(valor):
+    if not valor:
+        return "Modelo desconocido"
+    return valor
+
+
+def calcular_estadisticas():
+    inventario_list = inventario.convertir_a_lista_python()
+    vendidos_list = historial_eliminados.a_lista()
+
+    total_inventario = len(inventario_list)
+    valor_inventario = sum(c.precio for c in inventario_list)
+    promedio_precio = valor_inventario / total_inventario if total_inventario else 0
+    max_precio = max((c.precio for c in inventario_list), default=0)
+    min_precio = min((c.precio for c in inventario_list), default=0)
+
+    condition_counts = Counter(_normalizar_condicion(c.condicion) for c in inventario_list)
+    capacity_counts = Counter(_normalizar_capacidad(c.capacidad) for c in inventario_list)
+    inventory_top_models_counter = Counter(_normalizar_modelo(c.modelo) for c in inventario_list)
+
+    price_segments = []
+    for minimo, maximo, etiqueta in SEGMENTOS_PRECIO:
+        conteo = sum(1 for c in inventario_list if minimo <= c.precio < maximo)
+        price_segments.append({
+            "label": etiqueta,
+            "from": minimo,
+            "to": maximo if maximo != float("inf") else None,
+            "count": conteo
+        })
+
+    total_vendidos = len(vendidos_list)
+    ingresos = sum(c.precio for c in vendidos_list)
+    ticket_promedio = ingresos / total_vendidos if total_vendidos else 0
+
+    ventas_por_modelo = Counter(_normalizar_modelo(c.modelo) for c in vendidos_list)
+    ingresos_por_modelo = defaultdict(float)
+    for celular in vendidos_list:
+        ingresos_por_modelo[_normalizar_modelo(celular.modelo)] += celular.precio
+
+    top_modelos_vendidos = [
+        {
+            "modelo": modelo,
+            "cantidad": cantidad,
+            "ingresos": round(ingresos_por_modelo[modelo], 2)
+        }
+        for modelo, cantidad in ventas_por_modelo.most_common(5)
+    ]
+
+    top_modelos_inventario = [
+        {
+            "modelo": modelo,
+            "cantidad": cantidad
+        }
+        for modelo, cantidad in inventory_top_models_counter.most_common(5)
+    ]
+
+    estadisticas = {
+        "inventory": {
+            "total": total_inventario,
+            "available": total_inventario,  # Lista enlazada solo guarda disponibles
+            "value": round(valor_inventario, 2),
+            "average_price": round(promedio_precio, 2),
+            "max_price": round(max_precio, 2),
+            "min_price": round(min_precio, 2),
+            "condition_distribution": dict(condition_counts),
+            "capacity_distribution": dict(capacity_counts),
+            "price_segments": price_segments,
+            "top_models": top_modelos_inventario
+        },
+        "sales": {
+            "total": total_vendidos,
+            "revenue": round(ingresos, 2),
+            "average_ticket": round(ticket_promedio, 2),
+            "top_models": top_modelos_vendidos
+        }
+    }
+
+    return estadisticas
 
 # --- Funciones de Carga y Guardado ---
 def cargar_datos():
@@ -195,6 +295,14 @@ def get_sorted_inventory():
         logging.info("Inventario ordenado por Modelo usando Quick Sort.")
         
     return jsonify([c.__dict__ for c in lista_py])
+
+
+@app.route('/api/stats', methods=['GET'])
+def get_stats():
+    """Devuelve métricas agregadas de inventario y ventas."""
+    stats_payload = calcular_estadisticas()
+    logging.debug("GET /api/stats - Enviando estadísticas resumidas")
+    return jsonify(stats_payload)
 
 # --- Main ---
 if __name__ == '__main__':

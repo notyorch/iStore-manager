@@ -46,6 +46,12 @@ Análisis de datos y filtrado avanzado.
 - **Algoritmo:** `Quick Sort` (para generar reportes ordenados de mayor a menor precio).
 <img src="screenshots/reportes.png" alt="Vista de reportes" >
 
+### 5. Estadísticas y gráficos
+Panel analítico totalmente configurable con enfoque ejecutivo.
+- **Funcionalidad:** Personaliza la métrica (ventas o ingresos), rango temporal y tipo de gráfico (barras, línea, área) con comparativos contra metas.
+- **Extras:** Exportación directa a CSV y Markdown listo para convertir a PDF, vista previa con formato Markdown y toggles para porcentajes y foco de inventario.
+- **Uso sugerido:** Compartir reportes rápidos con el equipo o generar informes académicos/profesionales basados en los datos del dashboard.
+
 
 ## Requisitos Previos
 
